@@ -1,0 +1,46 @@
+[
+  {
+    "date": "2025-08-13",
+    "home_team": "MIL",
+    "home_ml": -250,
+    "away_team": "PIT",
+    "away_ml": 200,
+    "model1_home_runs": 4.459,
+    "model1_away_runs": 3.122,
+    "model2_home_win_prob": 0.5804,
+    "model2_away_win_prob": 0.4196
+  },
+  {
+    "date": "2025-08-13",
+    "home_team": "STL",
+    "home_ml": -230,
+    "away_team": "COL",
+    "away_ml": 190,
+    "model1_home_runs": 4.552,
+    "model1_away_runs": 3.12,
+    "model2_home_win_prob": 0.5635,
+    "model2_away_win_prob": 0.4365
+  },
+  {
+    "date": "2025-08-13",
+    "home_team": "NYY",
+    "home_ml": -152,
+    "away_team": "MIN",
+    "away_ml": 128,
+    "model1_home_runs": 5.033,
+    "model1_away_runs": 3.999,
+    "model2_home_win_prob": 0.5233,
+    "model2_away_win_prob": 0.4767
+  },
+  {
+    "date": "2025-08-13",
+    "home_team": "TB",
+    "home_ml": -135,
+    "away_team": "OAK",
+    "away_ml": 114,
+    "model1_home_runs": 4.306,
+    "model1_away_runs": 4.384,
+    "model2_home_win_prob": 0.463,
+    "model2_away_win_prob": 0.537
+  }
+]

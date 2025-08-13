@@ -1,0 +1,128 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>MLB Consensus Projections</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="header">
+    <div class="flex">
+      <div class="badge">CONSENSUS</div>
+      <h1>MLB Projections – <span id="dateLabel"></span></h1>
+    </div>
+    <div class="small">Demo template • edit <code>data.json</code></div>
+  </div>
+  <div class="container">
+    <div class="panel" id="consensusPanel">
+      <div class="panel-title">
+        <div>Consensus (Model 1 + Model 2)</div>
+        <div class="kpis"><span>All-time: <b>—</b></span><span>Last 5 days: <b>—</b></span></div>
+      </div>
+      <table class="table" id="consensusTable">
+        <thead class="sticky">
+          <tr>
+            <th>Home Team</th>
+            <th>Away Team</th>
+            <th class="right">Projected Winner</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title"><div>Model 2 – Win Probabilities</div></div>
+      <table class="table" id="model2Table">
+        <thead class="sticky">
+          <tr>
+            <th>Home</th>
+            <th class="right">Home Win %</th>
+            <th class="right">Away Win %</th>
+            <th>Away</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title"><div>Model 1 – Projected Runs</div></div>
+      <table class="table" id="model1Table">
+        <thead class="sticky">
+          <tr>
+            <th>Home</th>
+            <th class="right">Proj. Runs (H)</th>
+            <th class="right">Proj. Runs (A)</th>
+            <th>Away</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <footer>Built with a static HTML template. Replace data in <code>data.json</code> or point to any JSON endpoint.</footer>
+  </div>
+
+<script>
+async function load() {
+  const res = await fetch('data.json');
+  const rows = await res.json();
+  if (!rows.length) return;
+  const date = rows[0].date;
+  document.getElementById('dateLabel').textContent = date;
+
+  // helpers
+  const impliedML = (p) => {
+    if (p <= 0) return 0;
+    if (p >= 1) return 0;
+    return p >= 0.5 ? Math.round(-100 * p / (1-p)) : Math.round(100 * (1-p) / p);
+  };
+
+  const formatML = (ml) => (ml > 0 ? "+"+ml : ml);
+
+  // Consensus winner = (Model2 win% + Model1 runs edge -> 0/1 addition) normalized
+  // We'll treat Model1 edge as +3% to side with higher projected runs
+  const consensusBody = document.querySelector('#consensusTable tbody');
+  const m2Body = document.querySelector('#model2Table tbody');
+  const m1Body = document.querySelector('#model1Table tbody');
+
+  rows.forEach(r => {
+    const m1EdgeHome = r.model1_home_runs - r.model1_away_runs;
+    let homeProb = r.model2_home_win_prob;
+    let awayProb = r.model2_away_win_prob;
+    if (m1EdgeHome > 0.1) { homeProb += 0.03; awayProb -= 0.03; }
+    if (m1EdgeHome < -0.1) { homeProb -= 0.03; awayProb += 0.03; }
+    // normalize
+    const sum = homeProb + awayProb;
+    homeProb /= sum; awayProb /= sum;
+
+    const pick = homeProb >= awayProb ? `${r.home_team} ${formatML(impliedML(homeProb))}`
+                                      : `${r.away_team} ${formatML(impliedML(awayProb))}`;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.home_team} (${formatML(r.home_ml)})</td>
+                    <td>${r.away_team} (${formatML(r.away_ml)})</td>
+                    <td class="right"><span class="tag">${pick}</span></td>`;
+    consensusBody.appendChild(tr);
+
+    const tr2 = document.createElement('tr');
+    tr2.innerHTML = `<td>${r.home_team}</td>
+                     <td class="right">${(r.model2_home_win_prob*100).toFixed(2)}%</td>
+                     <td class="right">${(r.model2_away_win_prob*100).toFixed(2)}%</td>
+                     <td>${r.away_team}</td>`;
+    m2Body.appendChild(tr2);
+
+    const tr3 = document.createElement('tr');
+    tr3.innerHTML = `<td>${r.home_team}</td>
+                     <td class="right">${r.model1_home_runs.toFixed(3)}</td>
+                     <td class="right">${r.model1_away_runs.toFixed(3)}</td>
+                     <td>${r.away_team}</td>`;
+    m1Body.appendChild(tr3);
+  });
+}
+load();
+</script>
+</body>
+</html>
